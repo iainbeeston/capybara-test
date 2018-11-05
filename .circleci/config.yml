@@ -1,0 +1,26 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:2.5.1-node-browsers
+        environment:
+          RACK_ENV: test
+          RAILS_ENV: test
+          PGHOST: 127.0.0.1
+          PGUSER: pg
+      - image: circleci/postgres:9.6
+        environment:
+          POSTGRES_USER: pg
+          POSTGRES_DB: capybara-test_test
+          POSTGRES_PASSWORD: ""
+    steps:
+      - checkout
+      - run:
+          command: bundle install
+      - run:
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
+
+      - run:
+          command: bin/rails db:schema:load
+      - run:
+          command: bundle exec rspec
